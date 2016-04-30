@@ -1,13 +1,17 @@
 module ComfortableMexicanSofa::Fixture::File
   class Importer < ComfortableMexicanSofa::Fixture::Importer
     def import!
-      Dir["#{self.path}[^_]*"].each do |file_path|
+      Dir["#{self.path}[^_]*", "#{self.path}[^_]*/*"].each do |file_path|
         filename = ::File.basename(file_path)
         file = self.site.files.where(:file_file_name => filename).first || self.site.files.new
 
+        if File.directory?(file_path) or file_path.end_with? "yml"
+          next
+        end
+
         # setting attributes
         categories = []
-        if File.exists?(attrs_path = File.join(self.path, "_#{filename}.yml"))
+        if File.exists?(attrs_path = File.join(File.dirname(file_path), "_#{filename}.yml"))
           if fresh_fixture?(file, attrs_path)
             attrs = get_attributes(attrs_path)
 
